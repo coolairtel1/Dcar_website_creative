@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
+/* Design tokens — extracted from forgeautomotive.co.uk */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bc0: #000000;
+  --bc1: #0c0c0c;
+  --bc2: #161616;
+  --bc3: #410306;
+  --gold: #c5a064;
+  --ivory: #f2f1ed;
+
+  --bezzy: cubic-bezier(0.8, 0, 0, 1);
+  --bezzy2: cubic-bezier(0.43, 0.195, 0.02, 1);
+  --bezzy3: cubic-bezier(0.5, 0, 0, 1);
+
+  --header-h: 88px;
+}
+@media (min-width: 1024px) {
+  :root { --header-h: 96px; }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bc0: var(--bc0);
+  --color-bc1: var(--bc1);
+  --color-bc2: var(--bc2);
+  --color-bc3: var(--bc3);
+  --color-gold: var(--gold);
+  --color-ivory: var(--ivory);
+  --font-sans: var(--font-geist), Arial, Helvetica, sans-serif;
+  --font-serif: var(--font-editorial), Georgia, "Times New Roman", serif;
+  --ease-bezzy: var(--bezzy);
+  --ease-bezzy2: var(--bezzy2);
+  --ease-bezzy3: var(--bezzy3);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html { background: var(--bc0); color-scheme: dark; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bc0);
+  color: #fff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@layer components {
+/* Condensed thin serif — stand-in for Editorial New, with Vietnamese glyphs */
+.font-serif {
+  font-variation-settings: "wdth" 70;
+  font-weight: 200;
+}
+
+/* Forge label: 10–11px, uppercase, tracking 3px */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Button with rotating conic shimmer border (Forge "gradient-angle" + "shimmer") */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 28px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 3px;
+  isolation: isolate;
+  transition: letter-spacing 0.6s var(--bezzy2);
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    rgb(255 255 255 / 0.18) 0%,
+    rgb(255 255 255 / 0.18) 70%,
+    var(--gold) 85%,
+    rgb(255 255 255 / 0.18) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+  animation: gradient-angle 4s linear infinite paused;
+}
+.btn:hover { letter-spacing: 4px; }
+.btn:hover::before { animation-play-state: running; }
+.btn--solid { background: #fff; color: #000; }
+}
+@keyframes gradient-angle { to { --gradient-angle: 360deg; } }
+
+/* Logo marquee */
+@keyframes logoMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap))); }
+}
+.marquee { --gap: 64px; display: flex; gap: var(--gap); overflow: hidden; }
+.marquee > * { flex-shrink: 0; display: flex; gap: var(--gap); animation: logoMarquee 30s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee > *, .btn::before { animation: none; }
+}
+
+/* Hero slider */
+@keyframes kenburns { from { transform: scale(1.12); } to { transform: scale(1); } }
+@keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Page enter (Forge page-fade-in) */
+@keyframes page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.page-enter { animation: page-fade-in 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@layer components {
+/* Form fields — hairline underline like Forge contact */
+.field {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.2);
+  padding: 14px 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 300;
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.3s var(--bezzy2);
+}
+.field::placeholder { color: rgb(255 255 255 / 0.35); }
+.field:focus { border-color: var(--gold); }
+select.field { appearance: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='white' stroke-width='1.3'%3E%3Cpath d='m2 4 4 4 4-4'/%3E%3C/svg%3E") no-repeat right 4px center; }
+select.field option { background: var(--bc2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, [class*="animate-[kenburns"] { animation: none; }
 }
